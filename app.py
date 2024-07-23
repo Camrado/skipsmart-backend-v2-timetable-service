@@ -34,6 +34,3 @@ def get_working_days():
 	working_days = get_working_days_util(edupage, group, subgroup, start_date, end_date)
 
 	return jsonify(working_days), 200
-
-if __name__ == '__main__':
-	app.run(debug=True)
