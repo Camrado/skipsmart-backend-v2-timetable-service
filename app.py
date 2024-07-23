@@ -35,8 +35,9 @@ def get_working_days():
 	start_date = datetime.strptime(request.args.get('start_date'), '%Y-%m-%d').date()
 	end_date = datetime.strptime(request.args.get('end_date'), '%Y-%m-%d').date()
 	group = get_group_by_id(edupage, int(request.args.get('group_id')))
-	subgroup = int(request.args.get('subgroup'))
+	language_subgroup = int(request.args.get('language_subgroup'))
+	faculty_subgroup = int(request.args.get('faculty_subgroup'))
 
-	working_days = get_working_days_util(edupage, group, subgroup, start_date, end_date)
+	working_days = get_working_days_util(edupage, group, language_subgroup, faculty_subgroup, start_date, end_date)
 
 	return jsonify(working_days), 200
