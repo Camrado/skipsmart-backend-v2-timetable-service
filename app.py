@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from dotenv import load_dotenv
 from datetime import datetime
 from edupage_api import EdupageForSkipSmart
@@ -9,6 +10,7 @@ import os
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": os.environ['ALLOWED_ORIGIN']}})
 
 edupage = EdupageForSkipSmart()
 edupage.login(os.environ['EDUPAGE_USERNAME'], os.environ['EDUPAGE_PASSWORD'], os.environ['EDUPAGE_DOMAIN'])
