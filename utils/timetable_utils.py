@@ -17,10 +17,12 @@ def convert_lessons_to_dict(lessons):
   for lesson in lessons:
     # Extract lesson details
     course_name = lesson.subject_name.name
+    teacher = ''
     language_subgroup = 0
     faculty_subgroup = 0
 
     if 'English' in course_name or 'French' in course_name:
+      teacher = lesson.teachers[0].name
       if lesson.groups and lesson.groups[0]:
         language_subgroup = int(lesson.groups[0].split()[-1])
     else:
@@ -42,7 +44,8 @@ def convert_lessons_to_dict(lessons):
           'CourseName': course_name,
           'LanguageSubgroup': language_subgroup,
           'FacultySubgroup': faculty_subgroup,
-          'Period': i + 1
+          'Period': i + 1,
+          'Teacher': teacher
         })
 
   return result
