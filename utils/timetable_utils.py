@@ -22,7 +22,10 @@ def convert_lessons_to_dict(lessons):
     faculty_subgroup = 0
 
     if 'English' in course_name or 'French' in course_name:
-      teacher = lesson.teachers[0].name
+      if course_name == 'UE221 French A1/IC':
+        teacher = 'A1 ' + lesson.teachers[0].name
+      else:
+        teacher = lesson.teachers[0].name
       if lesson.groups and lesson.groups[0]:
         language_subgroup = int(lesson.groups[0].split()[-1])
     else:
