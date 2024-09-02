@@ -12,11 +12,11 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": os.environ['ALLOWED_ORIGIN']}})
 
-edupage = EdupageForSkipSmart()
-edupage.login(os.environ['EDUPAGE_USERNAME'], os.environ['EDUPAGE_PASSWORD'], os.environ['EDUPAGE_DOMAIN'])
-
 @app.route('/api/timetable-service/v1/timetable-for-date')
 def get_timetable_for_date():
+	edupage = EdupageForSkipSmart()
+	edupage.login(os.environ['EDUPAGE_USERNAME'], os.environ['EDUPAGE_PASSWORD'], os.environ['EDUPAGE_DOMAIN'])
+
 	key = request.args.get('key')
 	if key is None or key != os.environ['PASSWORD_KEY']:
 		return jsonify({'message': 'Invalid key'}), 401
@@ -30,6 +30,9 @@ def get_timetable_for_date():
 
 @app.route('/api/timetable-service/v1/working-days')
 def get_working_days():
+	edupage = EdupageForSkipSmart()
+	edupage.login(os.environ['EDUPAGE_USERNAME'], os.environ['EDUPAGE_PASSWORD'], os.environ['EDUPAGE_DOMAIN'])
+
 	key = request.args.get('key')
 	if key is None or key != os.environ['PASSWORD_KEY']:
 		return jsonify({'message': 'Invalid key'}), 401
