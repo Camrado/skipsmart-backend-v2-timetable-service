@@ -65,13 +65,24 @@ def get_timetable_for_date_util(edupage_instance, group, date):
   return convert_lessons_to_dict(timetable_for_date)
 
 # Returns a list of all the dates where there's at least one lesson for the the specified group and subgroup
-def get_working_days_util(edupage_instance, group, language_subgroup, faculty_subgroup, start_date, end_date):
+def get_working_days_util(edupage_instance, group, language_subgroup, faculty_subgroup, start_date, end_date, courses):
   working_days = set()
+  courses_list = courses.split(';')
   
   for i in range(math.ceil(((end_date - start_date).days + 1) / 7)):
     timetable = edupage_instance.get_foreign_timetable(group, start_date + timedelta(weeks=i))
     
     for lesson in timetable:
+      skip_this_lesson = True
+      temp_lesson_name = lesson.subject_name.name[6:].lower()
+      for course in courses_list:
+        if temp_lesson_name.startswith(course.lower()):
+          skip_this_lesson = False
+          break
+
+      if skip_this_lesson:
+        continue
+
       if lesson.date >= start_date and lesson.date <= end_date:
         if lesson.subject_name.name == 'English' or lesson.subject_name.name == 'French':
           if lesson.groups is None or str(language_subgroup) in lesson.groups[0]:
