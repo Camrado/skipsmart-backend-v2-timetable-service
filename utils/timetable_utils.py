@@ -1,5 +1,6 @@
 from datetime import datetime, time, timedelta
 import math
+import re
 
 periods = [
   (time(8, 30), time(10, 0)),    # Period 1
@@ -9,6 +10,24 @@ periods = [
   (time(16, 15), time(17, 45)),  # Period 5
   (time(18, 0), time(19, 30))    # Period 6
 ]
+
+L1_LANGUAGE_GROUPS = [
+  { 'group': 1, 'teacher': 'A1 Khalid Aslanov', 'language': 'French' },
+  { 'group': 2, 'teacher': 'Tarana Kalantarova', 'language': 'French' },
+  { 'group': 3, 'teacher': 'Khalid Aslanov', 'language': 'French' },
+  { 'group': 4, 'teacher': 'Vafa Guliyeva', 'language': 'French' },
+  { 'group': 5, 'teacher': 'Aytan Babaliyeva', 'language': 'French' },
+  { 'group': 6, 'teacher': 'Latchine Bayramova', 'language': 'French' },
+  { 'group': 7, 'teacher': 'Sveta Gadimova ', 'language': 'English' },
+  { 'group': 8, 'teacher': 'Shabnam Aliyeva', 'language': 'English' }
+]
+
+def get_teacher(l1_lan_group):
+  for group_info in L1_LANGUAGE_GROUPS:
+    if group_info['group'] == l1_lan_group:
+      return group_info['teacher']
+  return None  # If the group is not found
+
 
 # Converts the response from edupage api to the desired format
 def convert_lessons_to_dict(lessons):
@@ -68,6 +87,13 @@ def get_timetable_for_date_util(edupage_instance, group, date):
 def get_working_days_util(edupage_instance, group, language_subgroup, faculty_subgroup, start_date, end_date, courses):
   working_days = set()
   courses_list = courses.split(';')
+  l1_lan_group = -1
+
+  for course in courses_list:
+    if course.startswith('English') or course.startswith('French'):
+      match = re.search(r'(\d+)$', course.strip())
+      if match:
+        l1_lan_group = int(match.group(1))
   
   for i in range(math.ceil(((end_date - start_date).days + 1) / 7)):
     timetable = edupage_instance.get_foreign_timetable(group, start_date + timedelta(weeks=i))
@@ -84,8 +110,13 @@ def get_working_days_util(edupage_instance, group, language_subgroup, faculty_su
         continue
 
       if lesson.date >= start_date and lesson.date <= end_date:
-        if lesson.subject_name.name == 'English' or lesson.subject_name.name == 'French':
-          if lesson.groups is None or str(language_subgroup) in lesson.groups[0]:
+        if lesson.subject_name.name == 'UE221 French A1/IC' and l1_lan_group == 1:
+          working_days.add(str(lesson.date))
+        elif lesson.subject_name.name == 'UE219 French/IC' and l1_lan_group > 1 and l1_lan_group < 7:
+          if lesson.teachers[0].name == get_teacher(l1_lan_group):
+            working_days.add(str(lesson.date))
+        elif lesson.subject_name.name == 'UE218 English/IC' and l1_lan_group > 6 and l1_lan_group < 9:
+          if lesson.teachers[0].name == get_teacher(l1_lan_group):
             working_days.add(str(lesson.date))
         else:
           if lesson.groups is None or str(faculty_subgroup) in lesson.groups[0]:
