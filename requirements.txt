@@ -3,3 +3,4 @@ Gunicorn
 python-dotenv
 requests
 flask-cors
+edupage-api

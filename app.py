@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 from datetime import datetime
-from edupage_api import EdupageForSkipSmart
+from edupage_api import Edupage
 from utils.timetable_utils import get_timetable_for_date_util, get_working_days_util
 from utils.group_utils import get_group_by_id
 import os
@@ -14,7 +14,7 @@ CORS(app, resources={r"/*": {"origins": os.environ['ALLOWED_ORIGIN']}})
 
 @app.route('/api/timetable-service/v1/timetable-for-date')
 def get_timetable_for_date():
-	edupage = EdupageForSkipSmart()
+	edupage = Edupage()
 	edupage.login(os.environ['EDUPAGE_USERNAME'], os.environ['EDUPAGE_PASSWORD'], os.environ['EDUPAGE_DOMAIN'])
 
 	key = request.args.get('key')
@@ -30,7 +30,7 @@ def get_timetable_for_date():
 
 @app.route('/api/timetable-service/v1/working-days', methods=['POST'])
 def get_working_days():
-	edupage = EdupageForSkipSmart()
+	edupage = Edupage()
 	edupage.login(os.environ['EDUPAGE_USERNAME'], os.environ['EDUPAGE_PASSWORD'], os.environ['EDUPAGE_DOMAIN'])
 
 	data = request.get_json()
