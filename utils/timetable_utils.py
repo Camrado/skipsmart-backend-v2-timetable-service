@@ -11,18 +11,20 @@ periods = [
   (time(18, 0), time(19, 30))    # Period 6
 ]
 
-L1_LANGUAGE_GROUPS = [
-  { 'group': 1, 'teacher': 'Tarana Kalantarova' },
-  { 'group': 2, 'teacher': 'Latchine Bayramova' },
-  { 'group': 3, 'teacher': 'Aytan Babaliyeva' },
-  { 'group': 4, 'teacher': 'Vafa Guliyeva' },
-  { 'group': 5, 'teacher': 'Tarana Kalantarova' },
-  { 'group': 6, 'teacher': 'Irada Piriyeva' }
+L2_LANGUAGE_GROUPS = [
+    {'group': 1, 'teacher': 'Aytan Babaliyeva', 'allFaculties': True},
+    {'group': 2, 'teacher': 'Irada Piriyeva', 'allFaculties': True},
+    {'group': 3, 'teacher': 'Vafa Guliyeva', 'allFaculties': True},
+    {'group': 4, 'teacher': 'Tarana Kalantarova', 'allFaculties': True},
+    {'group': 5, 'teacher': 'Latchine Bayramova', 'allFaculties': False},
+    {'group': 6, 'teacher': 'Tarana Kalantarova', 'allFaculties': False},
+    {'group': 7, 'teacher': 'Vafa Guliyeva', 'allFaculties': False},
+    {'group': 8, 'teacher': 'Khalid Aslanov', 'allFaculties': False}
 ]
 
-def get_teacher(l1_lan_group):
-  for group_info in L1_LANGUAGE_GROUPS:
-    if group_info['group'] == l1_lan_group:
+def get_teacher(l2_lan_group):
+  for group_info in L2_LANGUAGE_GROUPS:
+    if group_info['group'] == l2_lan_group:
       return group_info['teacher']
   return None  # If the group is not found
 
@@ -100,13 +102,13 @@ def get_timetable_for_date_util(edupage_instance, group, date):
 def get_working_days_util(edupage_instance, group, language_subgroup, faculty_subgroup, start_date, end_date, courses):
   working_days = set()
   courses_list = courses.split(';')
-  l1_lan_group = -1
+  l2_lan_group = language_subgroup
 
   for course in courses_list:
     if course.startswith('English') or course.startswith('French'):
       match = re.search(r'(\d+)$', course.strip())
       if match:
-        l1_lan_group = int(match.group(1))
+        l2_lan_group = int(match.group(1))
   
   total_days = (end_date - start_date).days + 1
   for i in range(total_days):
@@ -119,6 +121,7 @@ def get_working_days_util(edupage_instance, group, language_subgroup, faculty_su
       subject = getattr(lesson, 'subject', {})
       course_name = subject.name if hasattr(subject, 'name') else subject.get('name', '') if isinstance(subject, dict) else ''
       temp_lesson_name = course_name[6:].lower()
+      classes = [c.name for c in lesson.classes]
       
       for course in courses_list:
         if temp_lesson_name.startswith(course.lower()):
@@ -136,11 +139,16 @@ def get_working_days_util(edupage_instance, group, language_subgroup, faculty_su
 
       groups = getattr(lesson, 'groups', None)
 
-      if course_name == 'UE323 French A1/IC' and l1_lan_group == 1:
-        working_days.add(str(current_date))
-      elif course_name == 'UE322 French/IC' and l1_lan_group > 1 and l1_lan_group < 7:
-        if teacher_name == get_teacher(l1_lan_group):
+      if 'french' in course_name.lower():
+        if course_name == 'UE323 French A1/IC' and l2_lan_group == 1:
           working_days.add(str(current_date))
+        elif course_name == 'UE322 French/IC' and l2_lan_group > 1:
+          if teacher_name == get_teacher(l2_lan_group):
+            group_info = next((g for g in L2_LANGUAGE_GROUPS if g['group'] == l2_lan_group), None)
+            if (group_info['allFaculties'] and len(classes) == 5):
+              working_days.add(str(current_date))
+            elif (not group_info['allFaculties'] and len(classes) != 5):
+              working_days.add(str(current_date))
       else:
         if groups is None or len(groups) == 0 or str(faculty_subgroup) in groups[0]:
           working_days.add(str(current_date))
